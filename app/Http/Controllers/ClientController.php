@@ -31,7 +31,7 @@ class ClientController extends Controller
 
     public function ssd()
     {
-        $clients = Client::orderBy('id', 'desc')->get();
+        $clients = Client::latest();
         return DataTables::of($clients)
             ->addColumn('action', function ($each) {
                 $edit = '<a href="' . route('clients.edit', $each->id) . '" class="btn mr-1 btn-success btn-sm">Edit</a>';

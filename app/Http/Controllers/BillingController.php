@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
 use App\Models\Client;
 use App\Models\Billing;
 use Illuminate\Support\Str;
+use App\Services\BillingService;
 use Yajra\DataTables\Facades\DataTables;
 use App\Http\Requests\StoreBillingRequest;
 use App\Http\Requests\UpdateBillingRequest;
@@ -24,7 +24,7 @@ class BillingController extends Controller
 
     public function ssd()
     {
-        $billing = Billing::with('clientName')->orderBy('id', 'desc')->get();
+        $billing = Billing::with('clientName')->latest();
         return DataTables::of($billing)
             ->addColumn('action', function ($each) {
                 $edit = '<a href="' . route('billing.edit', $each->id) . '" class="btn mr-1 btn-success btn-sm">Edit</a>';
@@ -55,17 +55,10 @@ class BillingController extends Controller
      * @param  \App\Http\Requests\StoreBillingRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreBillingRequest $request)
+    public function store(StoreBillingRequest $request, BillingService $billingService)
     {
-
-        Billing::create([
-            "client_id" => $request->client_id,
-            "amount" => $request->amount,
-            "due_date" =>  Carbon::parse($request->due_date)->format('Y-m-d'),
-            "description" => $request->description,
-        ]);
-
-        return redirect()->route('billing.index')->with('create', 'Successfully Created');
+        $response = $billingService->createBilling($request);
+        return $response;
     }
 
     /**
@@ -87,16 +80,10 @@ class BillingController extends Controller
      * @param  \App\Models\Billing  $billing
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateBillingRequest $request, Billing $billing)
+    public function update(UpdateBillingRequest $request, Billing $billing, BillingService $billingService)
     {
-        $billing->update([
-            'amount' => $request->amount,
-            'due_date' => Carbon::parse($request->due_date)->format('Y-m-d'),
-            'client_id' => $request->client_id,
-            'description' => $request->description
-        ]);
-
-        return redirect()->route('billing.index')->with('updated', 'Successfully Updated');
+        $response = $billingService->updateBilling($request, $billing);
+        return $response;
     }
 
     /**

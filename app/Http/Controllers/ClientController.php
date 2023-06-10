@@ -3,12 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Models\Client;
+use App\Services\ClientService;
 use Yajra\DataTables\Facades\DataTables;
 use App\Http\Requests\StoreClientRequest;
 use App\Http\Requests\UpdateClientRequest;
 
 class ClientController extends Controller
 {
+
+    protected $clientService;
+    protected $updateService;
+
+    public function __construct(ClientService $clientService)
+    {
+        $this->clientService = $clientService;
+        $this->updateService = $clientService;
+    }
     /**
      * Display a listing of the resource.
      *
@@ -51,14 +61,8 @@ class ClientController extends Controller
      */
     public function store(StoreClientRequest $request)
     {
-        Client::create([
-            'name' => $request->name,
-            'phone' => $request->phone,
-            'email' => $request->email,
-            'address' => $request->adress,
-        ]);
-
-        return redirect()->route('clients.index')->with('created', 'Successfully Created');
+        $response = $this->clientService->createClient($request);
+        return $response;
     }
 
 
@@ -82,14 +86,8 @@ class ClientController extends Controller
      */
     public function update(UpdateClientRequest $request, Client $client)
     {
-        $client->update([
-            'name' => $request->name,
-            'phone' => $request->phone,
-            'email' => $request->email,
-            'address' => $request->adress,
-        ]);
-
-        return redirect()->route('clients.index')->with('updated', 'Successfully Updated');
+        $response = $this->clientService->updateClient($request, $client);
+        return $response;
     }
 
     /**
